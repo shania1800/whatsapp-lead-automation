@@ -18,6 +18,7 @@ Built and operated as a live production system — not a demo project.
 
 ## Architecture
 
+![W1 Outbound Workflow](docs/w1-outbound-workflow.png)
 ![W2 Inbound Workflow](docs/w2-inbound-workflow.png)
 
 ```
