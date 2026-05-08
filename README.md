@@ -17,30 +17,29 @@ Built and operated as a live production system, not a demo project.
 ## Architecture
 
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│                        W1 - OUTBOUND                            │
-│                                                                 │
-│  Schedule (25min) -> Business Hours Check -> Supabase (pending) │
-│       -> Personalized Message -> Twilio/WhatsApp -> Update Status│
-└─────────────────────────────────────────────────────────────────┘
++-----------------------------------------------------------------+
+|                        W1 - OUTBOUND                            |
+|                                                                 |
+|  Schedule (25min) -> Business Hours Check -> Supabase (pending) |
+|       -> Personalized Message -> Twilio/WhatsApp -> Update Status |
++-----------------------------------------------------------------+
 
-┌─────────────────────────────────────────────────────────────────┐
-│                        W2 - INBOUND                             │
-│                                                                 │
-│  Twilio Webhook -> Validate -> Phone Sanitize -> Unsubscribe Check│
-│       -> Log Inbound -> Fetch Lead Record                        │
-│            │                                                    │
-│     [Known lead?]                                               │
-│       YES -┤                NO                                  │
-│            │                └-> Greeting Response               │
-│            ↓                                                    │
-│  Fetch Conversation History (Supabase)                          │
-│       -> Prepare AI Context (JS: state machine + prompt)        │
-│       -> OpenAI GPT-4o-mini                                     │
-│       -> Parse JSON Response                                     │
-│       -> Merge with Context                                     │
-│       -> Send via Twilio -> Log Outbound -> Webhook 200 OK      │
-└─────────────────────────────────────────────────────────────────┘
++-----------------------------------------------------------------+
+|                        W2 - INBOUND                             |
+|                                                                 |
+|  Twilio Webhook -> Validate -> Phone Sanitize -> Unsubscribe Check |
+|       -> Log Inbound -> Fetch Lead Record                       |
+|                                                                 |
+|  [Known lead?]                                                  |
+|       YES -> Fetch Conversation History (Supabase)              |
+|       NO  -> Greeting Response                                  |
+|                                                                 |
+|  Prepare AI Context (JS: state machine + prompt)                |
+|       -> OpenAI GPT-4o-mini                                     |
+|       -> Parse JSON Response                                    |
+|       -> Merge with Context                                     |
+|       -> Send via Twilio -> Log Outbound -> Webhook 200 OK      |
++-----------------------------------------------------------------+
 ```
 
 ---
