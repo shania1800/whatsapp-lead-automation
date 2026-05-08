@@ -1,10 +1,8 @@
-> Live system — Georgetown, Guyana. Built and operated solo.
-
 # WhatsApp Lead Automation System
 
 A two-workflow automation system that handles outbound prospecting and inbound AI-powered conversation for a WhatsApp-based B2B lead generation service targeting small businesses.
 
-Built and operated as a live production system — not a demo project.
+Built and operated as a live production system, not a demo project.
 
 ---
 
@@ -18,33 +16,30 @@ Built and operated as a live production system — not a demo project.
 
 ## Architecture
 
-![W1 Outbound Workflow](docs/w1-outbound-workflow.png)
-![W2 Inbound Workflow](docs/w2-inbound-workflow.png)
-
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                        W1 — OUTBOUND                            │
+│                        W1 - OUTBOUND                            │
 │                                                                 │
-│  Schedule (25min) → Business Hours Check → Supabase (pending)  │
-│       → Personalized Message → Twilio/WhatsApp → Update Status  │
+│  Schedule (25min) -> Business Hours Check -> Supabase (pending) │
+│       -> Personalized Message -> Twilio/WhatsApp -> Update Status│
 └─────────────────────────────────────────────────────────────────┘
 
 ┌─────────────────────────────────────────────────────────────────┐
-│                        W2 — INBOUND                             │
+│                        W2 - INBOUND                             │
 │                                                                 │
-│  Twilio Webhook → Validate → Phone Sanitize → Unsubscribe Check │
-│       → Log Inbound → Fetch Lead Record                         │
+│  Twilio Webhook -> Validate -> Phone Sanitize -> Unsubscribe Check│
+│       -> Log Inbound -> Fetch Lead Record                        │
 │            │                                                    │
 │     [Known lead?]                                               │
-│       YES ─┤                NO                                  │
-│            │                └→ Greeting Response                │
+│       YES -┤                NO                                  │
+│            │                └-> Greeting Response               │
 │            ↓                                                    │
 │  Fetch Conversation History (Supabase)                          │
-│       → Prepare AI Context (JS: state machine + prompt)         │
-│       → OpenAI GPT-4o-mini                                      │
-│       → Parse JSON Response                                     │
-│       → Merge with Context                                      │
-│       → Send via Twilio → Log Outbound → Webhook 200 OK        │
+│       -> Prepare AI Context (JS: state machine + prompt)        │
+│       -> OpenAI GPT-4o-mini                                     │
+│       -> Parse JSON Response                                     │
+│       -> Merge with Context                                     │
+│       -> Send via Twilio -> Log Outbound -> Webhook 200 OK      │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
@@ -65,27 +60,27 @@ Built and operated as a live production system — not a demo project.
 
 ## Conversation Flow (W2 State Machine)
 
-The AI doesn't freestyle. Every inbound message is evaluated against a structured 6-step sales flow:
+The AI does not freestyle. Every inbound message is evaluated against a structured 6-step sales flow:
 
 ```
-STEP 1  GREETING      → "Hey! I help businesses answer all their WhatsApp
-                         messages 24/7, is that something you're interested in?"
+STEP 1  GREETING      -> "Hey! I help businesses answer all their WhatsApp
+                          messages 24/7, is that something you're interested in?"
 
-STEP 2  VOLUME        → "Great! How many WhatsApp messages do you typically
-                         get per day?"
+STEP 2  VOLUME        -> "Great! How many WhatsApp messages do you typically
+                          get per day?"
 
-STEP 3  OFFER DEMO    → "Got it — that's a lot to handle manually. Want me
-                         to have a team member show you how this works?
-                         Takes about 10 minutes."
+STEP 3  OFFER DEMO    -> "Got it, that's a lot to handle manually. Want me
+                          to have a team member show you how this works?
+                          Takes about 10 minutes."
 
-STEP 4  COLLECT EMAIL → "What's your email address?"
+STEP 4  COLLECT EMAIL -> "What's your email address?"
 
-STEP 5  COLLECT TIME  → "Thanks! What time works best for you today or tomorrow?"
+STEP 5  COLLECT TIME  -> "Thanks! What time works best for you today or tomorrow?"
 
-STEP 6  CONFIRM       → "All set — a team member will reach out to you ASAP."
+STEP 6  CONFIRM       -> "All set, a team member will reach out to you ASAP."
 ```
 
-Step detection uses a combination of conversation history flags and latest-message-only parsing. Volume, email, and time are only considered "provided" if they appear in the customer's latest message — not anywhere in history. This prevents false positives from phrases like "24/7" or "10 minutes" triggering early step advancement.
+Step detection uses a combination of conversation history flags and latest-message-only parsing. Volume, email, and time are only considered "provided" if they appear in the customer's latest message, not anywhere in history. This prevents false positives from phrases like "24/7" or "10 minutes" triggering early step advancement.
 
 ---
 
@@ -102,13 +97,13 @@ Fix applied at two levels:
 - n8n: `.replace(/\s+/g, '').trim()`
 
 ### Silent Failure Prevention
-The send node and status-update node are deliberately decoupled with error handling between them. Without this, a failed send would still mark a lead as "Contacted" — the lead would never be retried and no error would surface.
+The send node and status-update node are deliberately decoupled with error handling between them. Without this, a failed send would still mark a lead as "Contacted" and the lead would never be retried with no error surfacing.
 
 ### Context Loss After HTTP Requests
 n8n's `$json` loses upstream context after HTTP Request nodes. All downstream nodes reference named nodes explicitly:
 
 ```javascript
-// Wrong — loses context after HTTP node
+// Wrong - loses context after HTTP node
 const phone = $json.customer_phone;
 
 // Correct
@@ -116,7 +111,7 @@ const phone = $('Prepare AI Context').item.json.customer_phone;
 ```
 
 ### `Merge By Position` Load-Bearing Role
-`Prepare AI Context` fans out to both OpenAI and the Merge node. The Merge node waits for the OpenAI response, then combines it with the original context (which carries customer_phone, customer_name, etc. — fields that are gone from `$json` after the HTTP call). Removing this node breaks phone number propagation to the send and log steps.
+`Prepare AI Context` fans out to both OpenAI and the Merge node. The Merge node waits for the OpenAI response, then combines it with the original context (customer_phone, customer_name, etc., fields that are gone from `$json` after the HTTP call). Removing this node breaks phone number propagation to the send and log steps.
 
 ---
 
@@ -146,11 +141,11 @@ timestamp       timestamptz DEFAULT now()
 
 ## Operational Notes
 
-- Outbound runs every 25 minutes, business hours only (8am–5pm ET)
+- Outbound runs every 25 minutes, business hours only (8am to 5pm ET)
 - Business hours enforced via n8n If node evaluating `toLocaleString('en-US', {timeZone: 'America/New_York'})`
-- One lead contacted per run — intentionally conservative to stay within WhatsApp messaging policy
+- One lead contacted per run, intentionally conservative to stay within WhatsApp messaging policy
 - Inbound webhook responds `200 OK` immediately regardless of processing outcome, to prevent Twilio retry storms
-- AI responses are capped at 1–2 sentences; prompt explicitly forbids using the words "automation" or "AI"
+- AI responses are capped at 1-2 sentences; prompt explicitly forbids using the words "automation" or "AI"
 
 ---
 
@@ -160,15 +155,11 @@ timestamp       timestamptz DEFAULT now()
 - The full leads database
 - n8n workflow JSON exports with live credentials
 
-The workflow logic, prompt engineering, state machine design, and architecture decisions are the substance of this project — the credentials are not.
+The workflow logic, prompt engineering, state machine design, and architecture decisions are the substance of this project. The credentials are not.
 
 ---
 
 ## Status
-
-## Evidence of Production Use
-![Campaign volume](docs/campaign-volume-by-date.png)
-![Leads table](docs/leads-table-schema.png)
 
 Live and in production. Ongoing work includes:
 
