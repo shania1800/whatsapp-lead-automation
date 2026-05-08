@@ -18,6 +18,8 @@ Built and operated as a live production system — not a demo project.
 
 ## Architecture
 
+![W2 Inbound Workflow](docs/w2-inbound-workflow.png)
+
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │                        W1 — OUTBOUND                            │
@@ -162,6 +164,10 @@ The workflow logic, prompt engineering, state machine design, and architecture d
 ---
 
 ## Status
+
+## Evidence of Production Use
+![Campaign volume](docs/campaign-volume-by-date.png)
+![Leads table](docs/leads-table-schema.png)
 
 Live and in production. Ongoing work includes:
 
