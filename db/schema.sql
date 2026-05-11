@@ -77,4 +77,4 @@ WHERE status = 'Contacted'
 -- Reset a lead for retesting
 UPDATE whatsapp_leads
 SET status = 'pending'
-WHERE phone_number = '+1XXXXXXXXXX';
+WHERE phone_number = '+18005550199';
