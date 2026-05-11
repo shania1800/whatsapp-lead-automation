@@ -14,8 +14,8 @@
  * Strips all whitespace from a phone number string.
  * Handles Twilio's \n injection and any other whitespace variants.
  *
- * @param {string} raw - Raw phone number from Twilio webhook (e.g. "+18005550199\n")
- * @returns {string} Clean phone number (e.g. "+18005550199")
+ * @param {string} raw - Raw phone number from Twilio webhook (e.g. "+15163477102\n")
+ * @returns {string} Clean phone number (e.g. "+15163477102")
  */
 function sanitizePhone(raw) {
   if (!raw || typeof raw !== 'string') return '';
